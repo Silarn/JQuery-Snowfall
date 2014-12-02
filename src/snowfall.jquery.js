@@ -18,30 +18,30 @@
 
     Version 1.51 Dec 2nd 2012
     // fixed bug where snow collection didn't happen if a valid doctype was declared.
-
+    
     Version 1.5 Oct 5th 2011
     Added collecting snow! Uses the canvas element to collect snow. In order to initialize snow collection use the following
-
+    
     $(document).snowfall({collection : 'element'});
 
     element = any valid jquery selector.
 
-    The plugin then creates a canvas above every element that matches the selector, and collects the snow. If there are a varrying amount of elements the
+    The plugin then creates a canvas above every element that matches the selector, and collects the snow. If there are a varrying amount of elements the 
     flakes get assigned a random one on start they will collide.
 
     Version 1.4 Dec 8th 2010
-    Fixed issues (I hope) with scroll bars flickering due to snow going over the edge of the screen.
+    Fixed issues (I hope) with scroll bars flickering due to snow going over the edge of the screen. 
     Added round snowflakes via css, will not work for any version of IE. - Thanks to Luke Barker of http://www.infinite-eye.com/
     Added shadows as an option via css again will not work with IE. The idea behind shadows, is to show flakes on lighter colored web sites - Thanks Yutt
-
+ 
     Version 1.3.1 Nov 25th 2010
-    Updated script that caused flakes not to show at all if plugin was initialized with no options, also added the fixes that Han Bongers suggested
-
+    Updated script that caused flakes not to show at all if plugin was initialized with no options, also added the fixes that Han Bongers suggested 
+    
     Developed by Jason Brown for any bugs or questions email me at loktar69@hotmail
     info on the plugin is located on Somethinghitme.com
-
+    
     values for snow options are
-
+    
     flakeCount,
     flakeColor,
     flakeIndex,
@@ -51,18 +51,18 @@
     maxSpeed,
     round,      true or false, makes the snowflakes rounded if the browser supports it.
     shadow      true or false, gives the snowflakes a shadow if the browser supports it.
-
+    
     Example Usage :
     $(document).snowfall({flakeCount : 100, maxSpeed : 10});
-
+    
     -or-
-
+    
     $('#element').snowfall({flakeCount : 800, maxSpeed : 5, maxSize : 5});
-
+    
     -or with defaults-
-
+    
     $(document).snowfall();
-
+    
     - To clear -
     $('#element').snowfall('clear');
 */
@@ -73,7 +73,7 @@ if (!Date.now)
 
 (function() {
     'use strict';
-
+    
     var vendors = ['webkit', 'moz'];
     for (var i = 0; i < vendors.length && !window.requestAnimationFrame; ++i) {
         var vp = vendors[i];
@@ -100,12 +100,13 @@ if (!Date.now)
         var defaults = {
                 flakeCount : 35,
                 flakeColor : '#ffffff',
-				flakePosition: 'absolute',
+                flakePosition: 'absolute',
                 flakeIndex: 999999,
                 minSize : 1,
                 maxSize : 2,
                 minSpeed : 1,
                 maxSpeed : 5,
+                fps : 30,
                 round : false,
                 shadow : false,
                 collection : false,
@@ -114,28 +115,28 @@ if (!Date.now)
             },
             options = $.extend(defaults, options),
             random = function random(min, max){
-                return Math.round(min + Math.random()*(max-min));
+                return Math.round(min + Math.random()*(max-min)); 
             };
-
-            $(element).data("snowfall", this);
-
+            
+            $(element).data("snowfall", this);          
+            
             // Snow flake object
             function Flake(_x, _y, _size, _speed, _id){
                 // Flake properties
-                this.id = _id;
+                this.id = _id; 
                 this.x  = _x;
                 this.y  = _y;
                 this.size = _size;
                 this.speed = _speed;
                 this.step = 0;
                 this.stepSize = random(1,10) / 100;
-
+    
                 if(options.collection){
                     this.target = canvasCollection[random(0,canvasCollection.length-1)];
                 }
-
+                
                 var flakeMarkup = null;
-
+                
                 if(options.image){
                     flakeMarkup = $(document.createElement("img"));
                     flakeMarkup[0].src = options.image;
@@ -143,30 +144,33 @@ if (!Date.now)
                     flakeMarkup = $(document.createElement("div"));
                     flakeMarkup.css({'background' : options.flakeColor});
                 }
-
+                
                 flakeMarkup.attr({'class': 'snowfall-flakes', 'id' : 'flake-' + this.id}).css({'width' : this.size, 'height' : this.size, 'position' : options.flakePosition, 'top' : this.y, 'left' : this.x, 'fontSize' : 0, 'zIndex' : options.flakeIndex});
-
+                
                 if($(element).get(0).tagName === $(document).get(0).tagName){
                     $('body').append(flakeMarkup);
                     element = $('body');
                 }else{
                     $(element).append(flakeMarkup);
                 }
-
+                
                 this.element = document.getElementById('flake-' + this.id);
-
+                
                 // Update function, used to update the snow flakes, and checks current snowflake against bounds
-                this.update = function(){
-                    this.y += this.speed;
+                this.update = function(elapsed){
+                    var ratio = elapsed / (1/options.fps*1000);
+                    this.y += this.speed*ratio;
 
                     if(this.y > (elHeight) - (this.size  + 6)){
                         this.reset();
                     }
-
+                    
                     this.element.style.top = this.y + 'px';
                     this.element.style.left = this.x + 'px';
-
+                    
                     this.step += this.stepSize;
+
+                    this.step += this.stepSize*ratio;
 
                     if (doRatio === false) {
                         this.x += Math.cos(this.step);
@@ -181,7 +185,7 @@ if (!Date.now)
                                 curX = this.x - this.target.x,
                                 curY = this.y - this.target.y,
                                 colData = this.target.colData;
-
+                                
                                 if(colData[parseInt(curX)][parseInt(curY+this.speed+this.size)] !== undefined || curY+this.speed+this.size > this.target.height){
                                     if(curY+this.speed+this.size > this.target.height){
                                         while(curY+this.speed+this.size > this.target.height && this.speed > 0){
@@ -189,7 +193,7 @@ if (!Date.now)
                                         }
 
                                         ctx.fillStyle = "#fff";
-
+                                        
                                         if(colData[parseInt(curX)][parseInt(curY+this.speed+this.size)] == undefined){
                                             colData[parseInt(curX)][parseInt(curY+this.speed+this.size)] = 1;
                                             ctx.fillRect(curX, (curY)+this.speed+this.size, this.size, this.size);
@@ -202,7 +206,7 @@ if (!Date.now)
                                         // flow to the sides
                                         this.speed = 1;
                                         this.stepSize = 0;
-
+                                    
                                         if(parseInt(curX)+1 < this.target.width && colData[parseInt(curX)+1][parseInt(curY)+1] == undefined ){
                                             // go left
                                             this.x++;
@@ -220,12 +224,12 @@ if (!Date.now)
                                 }
                         }
                     }
-
+                    
                     if(this.x + this.size > (elWidth) - widthOffset || this.x < widthOffset){
                         this.reset();
                     }
                 }
-
+                
                 // Resets the snowflake once it reaches one of the bounds set
                 this.reset = function(){
                     this.y = 0;
@@ -237,14 +241,15 @@ if (!Date.now)
                     this.speed = random(options.minSpeed, options.maxSpeed);
                 }
             }
-
+        
             // local vars
             var flakeId = 0,
                 i = 0,
                 elHeight = $(element).height(),
                 elWidth = $(element).width(),
                 widthOffset = 0,
-                snowTimeout = 0;
+                snowTimeout = 0,
+                last = 0;
 
             // Collection Piece ******************************
             if(options.collection !== false){
@@ -253,7 +258,7 @@ if (!Date.now)
                     var canvasCollection = [],
                         elements = $(options.collection),
                         collectionHeight = options.collectionHeight;
-
+                    
                     for(var i =0; i < elements.length; i++){
                             var bounds = elements[i].getBoundingClientRect(),
                                 $canvas = $('<canvas/>',
@@ -262,7 +267,7 @@ if (!Date.now)
                                     }),
                                 collisionData = [];
 
-                            if(bounds.top-collectionHeight > 0){
+                            if(bounds.top-collectionHeight > 0){                                    
                                 $('body').append($canvas);
 
                                 $canvas.css({
@@ -274,11 +279,11 @@ if (!Date.now)
                                     width: bounds.width,
                                     height: collectionHeight
                                 });
-
+                                
                                 for(var w = 0; w < bounds.width; w++){
                                     collisionData[w] = [];
                                 }
-
+                                
                                 canvasCollection.push({element : $canvas.get(0), x : bounds.left, y : bounds.top-collectionHeight, width : bounds.width, height: collectionHeight, colData : collisionData});
                             }
                     }
@@ -288,18 +293,18 @@ if (!Date.now)
                 }
             }
             // ************************************************
-
+            
             // This will reduce the horizontal scroll bar from displaying, when the effect is applied to the whole page
             if($(element).get(0).tagName === $(document).get(0).tagName){
                 widthOffset = 25;
             }
-
+            
             // Bind the window resize event so we can get the innerHeight again
-            $(window).bind("resize", function(){
+            $(window).bind("resize", function(){  
                 elHeight = $(element)[0].clientHeight;
                 elWidth = $(element)[0].offsetWidth;
-            });
-
+            }); 
+            
 
             // initialize the flakes
             for(i = 0; i < options.flakeCount; i+=1){
@@ -312,11 +317,11 @@ if (!Date.now)
                 flakes.sort(function(a, b){return a.id - b.id});
             }
 
-            // This adds the style to make the snowflakes round via border radius property
+            // This adds the style to make the snowflakes round via border radius property 
             if(options.round){
                 $('.snowfall-flakes').css({'-moz-border-radius' : options.maxSize, '-webkit-border-radius' : options.maxSize, 'border-radius' : options.maxSize});
             }
-
+            
             // This adds shadows just below the snowflake so they pop a bit on lighter colored web pages
             if(options.shadow){
                 $('.snowfall-flakes').css({'-moz-box-shadow' : '1px 1px 1px #555', '-webkit-box-shadow' : '1px 1px 1px #555', 'box-shadow' : '1px 1px 1px #555'});
@@ -331,15 +336,16 @@ if (!Date.now)
             }
 
             // this controls flow of the updating snow
-            function snow(){
+            function snow(timestamp){
                 for( i = 0; i < flakes.length; i += 1){
-                    flakes[i].update();
+                    flakes[i].update(timestamp-last);
                 }
+                last = timestamp;
 
-                snowTimeout = requestAnimationFrame(function(){snow()});
+                snowTimeout = requestAnimationFrame(function(ts){snow(ts)});
             }
 
-            snow();
+            snow(0);
 
             // clears the snowflakes
             this.clear = function(){
@@ -363,13 +369,13 @@ if (!Date.now)
                 cancelAnimationFrame(snowTimeout);
             }
     };
-
+    
     // Initialize the options and the plugin
     $.fn.snowfall = function(options){
-        if(typeof(options) == "object" || options == undefined){
+        if(typeof(options) == "object" || options == undefined){        
                  return this.each(function(i){
-                    (new $.snowfall(this, options));
-                });
+                    (new $.snowfall(this, options)); 
+                }); 
         }else if (typeof(options) == "string") {
             return this.each(function(i){
                 var snow = $(this).data('snowfall');
