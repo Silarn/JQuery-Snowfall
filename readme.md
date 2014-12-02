@@ -68,7 +68,7 @@ maxSize,
 minSpeed,
 maxSpeed,
 round, 		true or false, makes the snowflakes rounded if the browser supports it.
-shadow		true or false, gives the snowflakes a shadow if the browser supports it.
+shadow,		true or false, gives the snowflakes a shadow if the browser supports it.
 scale 		true of false, scales snowflake positions horizontally on window resize
 ```
 
