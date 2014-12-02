@@ -107,6 +107,7 @@ if (!Date.now)
                 maxSpeed : 5,
                 round : false,
                 shadow : false,
+                scale : true,
                 collection : false,
                 collectionHeight : 40,
                 deviceorientation : false
@@ -295,9 +296,23 @@ if (!Date.now)
             }
             
             // Bind the window resize event so we can get the innerHeight again
-            $(window).bind("resize", function(){  
-                elHeight = $(element)[0].clientHeight;
-                elWidth = $(element)[0].offsetWidth;
+            $(window).bind("resize", function(){
+                setTimeout(function(){
+                    elHeight = $(element)[0].clientHeight;
+                    if (options.scale === true && elWidth !== $(element)[0].offsetWidth) {
+                        var ratio = $(element)[0].offsetWidth / elWidth;
+                        $(element).children('.snowfall-flakes').each(function(){
+                            var id = this.id.substr(6);
+                            $.each(flakes, function(i, e){
+                                if (e.id == id) {
+                                    e.x = e.x*ratio;
+                                    return false;
+                                }
+                            });
+                        });
+                    }
+                    elWidth = $(element)[0].offsetWidth;
+                }, 100);
             }); 
             
 
