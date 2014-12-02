@@ -115,7 +115,7 @@ if (!Date.now)
             },
             options = $.extend(defaults, options),
             random = function random(min, max){
-                return Math.round(min + Math.random()*(max-min)); 
+                return min + Math.random()*(max-min);
             };
             
             $(element).data("snowfall", this);          
