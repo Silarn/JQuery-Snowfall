@@ -85,6 +85,7 @@ var snowFall = (function(){
             maxSize : 2,
             minSpeed : 1,
             maxSpeed : 5,
+            fps : 30,
             round : false,
             shadow : false,
             collection : false,
@@ -97,6 +98,7 @@ var snowFall = (function(){
             elWidth = 0,
             widthOffset = 0,
             snowTimeout = 0,
+            last = 0;
             // For extending the default object with properties
             extend = function(obj, extObj){
                 for(var i in extObj){
@@ -166,8 +168,9 @@ var snowFall = (function(){
                 this.element = flakeObj;
                 
                 // Update function, used to update the snow flakes, and checks current snowflake against bounds
-                this.update = function(){
-                    this.y += this.speed;
+                this.update = function(elapsed){
+                    var fpsRatio = elapsed / (1/defaults.fps*1000);
+                    this.y += this.speed*fpsRatio;
 
                     if(this.y > (elHeight) - (this.size  + 6)){
                         this.reset();
@@ -176,7 +179,7 @@ var snowFall = (function(){
                     this.element.style.top = this.y + 'px';
                     this.element.style.left = this.x + 'px';
 
-                    this.step += this.stepSize;
+                    this.step += this.stepSize*fpsRatio;
                     this.x += Math.cos(this.step);
                     
                     if(this.x + this.size > (elWidth) - widthOffset || this.x < widthOffset){
@@ -196,11 +199,13 @@ var snowFall = (function(){
                 }
             },
             // this controls flow of the updating snow
-            animateSnow = function(){
+            animateSnow = function(timestamp){
                 for(var i = 0; i < flakes.length; i += 1){
-                    flakes[i].update();
+                    flakes[i].update(timestamp-last);
                 }
-                snowTimeout = requestAnimationFrame(function(){animateSnow()});
+                last = timestamp;
+
+                snowTimeout = requestAnimationFrame(function(ts){animateSnow(ts)});
             }
         return{
             snow : function(_element, _options){
@@ -235,7 +240,7 @@ var snowFall = (function(){
                     flakes.sort(function(a, b){return a.id - b.id});
                 }
                 // start the snow
-                animateSnow();
+                animateSnow(0);
             },
             clear : function(){
                 var flakeChildren = null;

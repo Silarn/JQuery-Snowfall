@@ -159,8 +159,8 @@ if (!Date.now)
                 
                 // Update function, used to update the snow flakes, and checks current snowflake against bounds
                 this.update = function(elapsed){
-                    var ratio = elapsed / (1/options.fps*1000);
-                    this.y += this.speed*ratio;
+                    var fpsRatio = elapsed / (1/options.fps*1000);
+                    this.y += this.speed*fpsRatio;
 
                     if(this.y > (elHeight) - (this.size  + 6)){
                         this.reset();
@@ -171,7 +171,7 @@ if (!Date.now)
                     
                     this.step += this.stepSize;
 
-                    this.step += this.stepSize*ratio;
+                    this.step += this.stepSize*fpsRatio;
 
                     if (doRatio === false) {
                         this.x += Math.cos(this.step);
