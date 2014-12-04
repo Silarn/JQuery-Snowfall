@@ -168,15 +168,13 @@ if (!Date.now)
                     
                     this.element.style.top = this.y + 'px';
                     this.element.style.left = this.x + 'px';
-                    
-                    this.step += this.stepSize;
 
                     this.step += this.stepSize*fpsRatio;
 
                     if (doRatio === false) {
-                        this.x += Math.cos(this.step);
+                        this.x += Math.cos(this.step)*fpsRatio;
                     } else {
-                        this.x += (doRatio + Math.cos(this.step));
+                        this.x += (doRatio + Math.cos(this.step))*fpsRatio;
                     }
 
                     // Pileup check
