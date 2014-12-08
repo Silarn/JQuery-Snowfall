@@ -74,26 +74,24 @@ if (!Date.now)
 }());
 
 var snowFall = (function(){
-    var flakes = [];
     function jSnow(){
         // local methods
         var defaults = {
-            flakeCount : 35,
-            flakeColor : '#ffffff',
-            flakeIndex: 999999,
-            minSize : 1,
-            maxSize : 2,
-            minSpeed : 1,
-            maxSpeed : 5,
-            fps : 30,
-            round : false,
-            shadow : false,
-            collection : false,
-            image : false,
-            collectionHeight : 40
+                flakeCount : 35,
+                flakeColor : '#ffffff',
+                flakeIndex: 999999,
+                minSize : 1,
+                maxSize : 2,
+                minSpeed : 1,
+                maxSpeed : 5,
+                round : false,
+                shadow : false,
+                collection : false,
+                image : false,
+                collectionHeight : 40
             },
+            flakes = [],
             element = {},
-            flakeId = 0,
             elHeight = 0,
             elWidth = 0,
             widthOffset = 0,
@@ -119,11 +117,10 @@ var snowFall = (function(){
                 }
             },
             // snowflake
-            flake = function(_el, _size, _speed, _id)
+            flake = function(_el, _size, _speed)
             {
                 // Flake properties
-                this.id = _id; 
-                this.x  = random(widthOffset,elWidth - widthOffset);
+                this.x  = random(widthOffset, elWidth - widthOffset);
                 this.y  = random(0, elHeight);
                 this.size = _size;
                 this.speed = _speed;
@@ -140,12 +137,11 @@ var snowFall = (function(){
                     flakeObj = new Image();
                     flakeObj.src = defaults.image;
                 }else{
-                    flakeObj = document.createElement("div");
+                    flakeObj = document.createElement('div');
                     setStyle(flakeObj, {'background' : defaults.flakeColor});
                 }
                 
                 flakeObj.className = 'snowfall-flakes';
-                flakeObj.setAttribute('id','flake-' + this.id);
                 setStyle(flakeObj, {'width' : this.size, 'height' : this.size, 'position' : 'absolute', 'top' : this.y, 'left' : this.x, 'fontSize' : 0, 'zIndex' : defaults.flakeIndex});
         
                 // This adds the style to make the snowflakes round via border radius property 
@@ -172,7 +168,7 @@ var snowFall = (function(){
                     var fpsRatio = elapsed / (1/defaults.fps*1000);
                     this.y += this.speed*fpsRatio;
 
-                    if(this.y > (elHeight) - (this.size  + 6)){
+                    if(this.y > elHeight - (this.size  + 6)){
                         this.reset();
                     }
                     
@@ -182,7 +178,7 @@ var snowFall = (function(){
                     this.step += this.stepSize*fpsRatio;
                     this.x += Math.cos(this.step)*fpsRatio;
                     
-                    if(this.x + this.size > (elWidth) - widthOffset || this.x < widthOffset){
+                    if(this.x + this.size > elWidth - widthOffset || this.x < widthOffset){
                         this.reset();
                     }
                 }
@@ -213,7 +209,7 @@ var snowFall = (function(){
                 
                 //init the element vars
                 element = _element;
-                elHeight = element.clientHeight;
+                elHeight = element.offsetHeight;
                 elWidth = element.offsetWidth;
 
                 element.snow = this;
@@ -224,20 +220,14 @@ var snowFall = (function(){
                 }
                 
                 // Bind the window resize event so we can get the innerHeight again
-                window.onresize = function(){
+                window.addEventListener('resize', function(){
                     elHeight = element.clientHeight;
                     elWidth = element.offsetWidth;
-                }
+                }, true);
                 
                 // initialize the flakes
                 for(i = 0; i < defaults.flakeCount; i+=1){
-                    flakeId = 0;
-                    for(j = 0; j < flakes.length; j++){
-                        if (flakes[j].id == flakeId) flakeId++;
-                        if (flakes[j].id > flakeId) break;
-                    }
-                    flakes.push(new flake(element, random((defaults.minSize * 100), (defaults.maxSize * 100)) / 100, random(defaults.minSpeed, defaults.maxSpeed), flakeId));
-                    flakes.sort(function(a, b){return a.id - b.id});
+                    flakes.push(new flake(element, random((defaults.minSize * 100), (defaults.maxSize * 100)) / 100, random(defaults.minSpeed, defaults.maxSpeed)));
                 }
                 // start the snow
                 animateSnow(0);
@@ -251,25 +241,11 @@ var snowFall = (function(){
                     flakeChildren = element.getElementsByClassName('snowfall-flakes');
                 }
 
-                var newFlakes = flakes.slice();
-                for(i = 0; i < flakes.length; i++){
-                    for(j = 0; j < flakeChildren.length; j++) {
-                        if (flakeChildren[j].id == 'flake-'+flakes[i].id) {
-                            for (k = 0; k < newFlakes.length; k++) {
-                                if (flakes[i].id == newFlakes[k].id) {
-                                    newFlakes.splice(k, 1);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                newFlakes.sort(function(a, b){return a.id - b.id});
-                flakes = newFlakes;
-
                 var flakeChilLen = flakeChildren.length;
                 while(flakeChilLen--){
-                    element.removeChild(flakeChildren[flakeChilLen]);
+                    if(flakeChildren[flakeChilLen].parentNode === element){
+                        element.removeChild(flakeChildren[flakeChilLen]);
+                    }
                 }
 
                 cancelAnimationFrame(snowTimeout);
@@ -278,7 +254,7 @@ var snowFall = (function(){
     };
     return{
         snow : function(elements, options){
-            if(typeof(options) == "string"){
+            if(typeof(options) == 'string'){
                 if(elements.length > 0){
                     for(var i = 0; i < elements.length; i++){
                         if(elements[i].snow){
